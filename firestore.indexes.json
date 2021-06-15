@@ -1,0 +1,153 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "interest",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "listingId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dateCreated",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "interest",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "listingId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dateCreated",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "interest",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "listingId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "leadStrength",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "interest",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "listingId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "leadStrength",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "questions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "deleted",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "created",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "questions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "deleted",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "sellerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "created",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "showings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "buyerUserId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "scheduled",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "showings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "listingId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "scheduled",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "showings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "listingId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "scheduled",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "showings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "sellerUserId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "scheduled",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

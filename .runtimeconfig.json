@@ -1,0 +1,10 @@
+{
+   "twilio": {
+      "token": "f52f14927a0779ca90de6037c3806b4d",
+      "sid": "AC539de6b5e71236cd7d812ca897d45116",
+      "phonenumber": "+12569078856"
+   },
+   "stripe": {
+      "testkey": "sk_test_8R3eFIvvkdmks5CjcA5Q9Oko00VwJn7FkU"
+   }
+}
