@@ -3,3 +3,4 @@ firebase-debug.log
 firestore-debug.log
 sendgrid.env
 service-account.json
+/service-account.json

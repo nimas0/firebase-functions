@@ -1880,7 +1880,7 @@ exports.initialSetUpData = (addressPartsArray) => {
             },
             {
                label: 'Propane',
-               name: 'propane',
+            name: 'propane',
                value: false,
             },
             {
