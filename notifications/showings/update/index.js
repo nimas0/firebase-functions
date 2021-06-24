@@ -23,7 +23,18 @@ const showingsUpdated = functions.firestore
    const listingRef = admin.firestore().collection('listings');
    const listing = (await listingRef.doc(listingId).get()).data();
 
-   // Figure out what changed between previous and updated state 
+
+   // grab seller email
+   let sellerSnapshot = await admin
+   .database()
+   .ref(`users/${listing.primaryOwnerId}`)
+   .once('value');
+   let sellerUser = sellerSnapshot.val() && sellerSnapshot.val();
+   const sellerEmail = sellerUser.email;
+   const sellerDisplayName = sellerUser.displayName;
+
+
+   // figure out what changed between previous and updated state 
    const difference = findDiff(previous, updated);
    const isStatus = difference[0].key === 'status';
    const statusValue = isStatus && difference[0].update;
@@ -31,9 +42,6 @@ const showingsUpdated = functions.firestore
    try {
    // bail out if not a status update
    if (!status) return null;
-
-   // who submitted this status change? the buyer or seller?
-   const recipent = statusHistory[0] === buyerUser ? buyerUser.email : "seller"
 
    switch (statusValue) {
       case 'approved':
@@ -50,14 +58,15 @@ const showingsUpdated = functions.firestore
          });
          break;
       case 'cancelled':
+         // both parties recieve cancellation
+         // this way you don't need to track which party was responsible
+         // for cancelling. 
          sendEmail(buyerUser.email, "id", "Showing Cancelled", {
-            buyerDisplayName: buyerUser.displayName,
+            buyerDisplayName: sellerDisplayName,
             listingAddress: listing.fullAddress,
             cancelReason: cancelReason,
          });
-         break;
-      case 'rescheduled':
-         sendEmail(buyerUser.email, "id", "Showing Rescheduled", {
+         sendEmail(sellerEmail, "id", "Showing Cancelled", {
             buyerDisplayName: buyerUser.displayName,
             listingAddress: listing.fullAddress,
             cancelReason: cancelReason,

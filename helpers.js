@@ -1,17 +1,12 @@
 const _ = require('lodash');
 
-
-// function mergeArrays(val1, val2) {
-//     var results = val1.splice(0);
-//     console.log('mergeArray init', results)
-//     val2.forEach((val) => {
-//       if (val1.indexOf(val) < 0) {
-//         results.push(val);
-//       }
-//     });
-//     console.log('mergeArray Results', results)
-//     return results;
-//   }
+/**
+ * Find difference between two objects
+ * Does not factor in nested objects
+ * @param {*} val1 
+ * @param {*} val2 
+ * @returns {[{}]} array of object changes
+ */
 // will not work for nested objects. Need to improve.
 exports.findDiff = function diff(val1, val2) {
     var results  = [];
