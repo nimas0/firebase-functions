@@ -1,0 +1,43 @@
+{
+    "adminTasks": {
+        "create": ["newListing", "photoAppointment", "resume", "verificaton"],
+        "update": [],
+        "delete": []
+    },
+    "interest": {
+        "create": [],
+        "update": [],
+        "delete": []
+    },
+    "listing_state": {
+        "create": [],
+        "update": [],
+        "delete": []
+    },
+    "listings": {
+        "create": [],
+        "update": [],
+        "delete": []
+    },
+    "proposals": {
+        "create": [],
+        "update": [],
+        "delete": []
+    },
+    "showings": {
+        "create": ["email", "sms", "sellerapp"],
+        "update": {
+            "status": {
+                "cancellation": ["email", "sellerapp"],
+                "reschedule": ["email", "sellerapp"] 
+            }
+        },
+        "delete": []
+    },
+    "users": {
+        "create": [],
+        "update": [],
+        "delete": []
+    }
+}
+
