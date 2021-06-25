@@ -1930,7 +1930,7 @@ exports.initialSetUpData = (addressPartsArray) => {
          type: 'select',
          value: 'Please Select',
       },
-      photos: [{ id: 0, orientation: 'landscape', src: 'https://firebasestorage.googleapis.com/v0/b/finding-spaces-73b23.appspot.com/o/websiteimages%2FDefaultPhotoListing1.png?alt=media&token=0b4266a9-cef8-4d01-88fc-a046a1c79281' }],
+      photos: [{ id: 0, orientation: 'landscape', src: 'https://firebasestorage.googleapis.com/v0/b/finding-spaces-73b23.appspot.com/o/websiteimages%2FDefaultPhotoListing.png?alt=media&token=cd1cc5a4-50ca-4f29-ba85-a28ad773b0c9' }],
       showingCount: '0',
       uniqueViews: '0',
    };
