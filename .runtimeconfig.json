@@ -6,5 +6,8 @@
    },
    "stripe": {
       "testkey": "sk_test_8R3eFIvvkdmks5CjcA5Q9Oko00VwJn7FkU"
+   },
+   "sendgrid": {
+      "key": "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"
    }
 }

@@ -23,13 +23,14 @@ const showingsUpdated = functions.firestore
    const listingRef = admin.firestore().collection('listings');
    const listing = (await listingRef.doc(listingId).get()).data();
 
-
+   console.log("HERELISTING", listing)
    // grab seller email
    let sellerSnapshot = await admin
    .database()
    .ref(`users/${listing.primaryOwnerId}`)
    .once('value');
    let sellerUser = sellerSnapshot.val() && sellerSnapshot.val();
+   console.log("HERE", sellerUser)
    const sellerEmail = sellerUser.email;
    const sellerDisplayName = sellerUser.displayName;
 
@@ -62,12 +63,12 @@ const showingsUpdated = functions.firestore
          // this way you don't need to track which party was responsible
          // for cancelling. 
          sendEmail(buyerUser.email, "id", "Showing Cancelled", {
-            buyerDisplayName: sellerDisplayName,
+            buyerDisplayName: buyerUser.displayName,
             listingAddress: listing.fullAddress,
             cancelReason: cancelReason,
          });
          sendEmail(sellerEmail, "id", "Showing Cancelled", {
-            buyerDisplayName: buyerUser.displayName,
+            buyerDisplayName: sellerDisplayName,
             listingAddress: listing.fullAddress,
             cancelReason: cancelReason,
          });
