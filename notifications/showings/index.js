@@ -1,2 +1,2 @@
-exports.showingsUpdated = require('./update/index');
-exports.showingsCreated = require('./create/index');
+exports.create = require('./create');
+exports.update = require('./update');

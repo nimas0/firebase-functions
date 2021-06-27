@@ -1,1 +1,1 @@
-exports.new = require('./newLead');
+exports.created = require('./created')

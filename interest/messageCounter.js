@@ -10,12 +10,6 @@ exports.newMessageCounter = functions.database.ref('/interest_chat/{interestId}/
 
         const buyerId = interestId.split('_')[1];
         const listingId = interestId.split('_')[0];
-        functions.logger.log('OMG OMG OMG OMG');
-        functions.logger.log('listingId', listingId)
-        functions.logger.log('author', author)
-        functions.logger.log('buyerId', buyerId)
-        functions.logger.log('interestId', interestId)
-        functions.logger.log('END OMG OMG OMG OMG END');
 
 
         try {
@@ -31,7 +25,6 @@ exports.newMessageCounter = functions.database.ref('/interest_chat/{interestId}/
 
             } else {
                 // update seller message counter
-                functions.logger.log('END NOT THERE BUT MADE IT HERE END');
                 await interest.update({
                     newMessageCount: admin.firestore.FieldValue.increment(1)
                 });

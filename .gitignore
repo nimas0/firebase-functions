@@ -1,8 +1,6 @@
 node_modules/
-firebase-debug.log
 firestore-debug.log
 sendgrid.env
 service-account.json
 service-account-copy.json
-/service-account.json
 .runtimeconfig.json

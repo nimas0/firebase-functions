@@ -2,7 +2,7 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 
 // Buyer notified of seller's response to his/her question
-exports.sendQuestionAnsweredEmail = functions.firestore
+module.exports = functions.firestore
   .document('listings/{listingId}/questions/{questionId}')
   .onUpdate(async (change, context) => {
     const previous = change.before.data();

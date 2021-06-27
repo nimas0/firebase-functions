@@ -2,7 +2,7 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 
 
-exports.listingDetails = functions.firestore
+module.exports = functions.firestore
    .document('listings/{listingId}')
    .onUpdate((change, context) => {
       const newValue = change.after.data();

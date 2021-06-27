@@ -3,7 +3,7 @@ const admin = require('firebase-admin');
 
 
 // Seller notified about his/her new lead
-exports.sendNewLead = functions.firestore
+module.exports = functions.firestore
   .document('interest/{interstId}')
   .onCreate(async (snap, context) => {
     const { buyer, feedback = null, listingId, isExample } = snap.data();

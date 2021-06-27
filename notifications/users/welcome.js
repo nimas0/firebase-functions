@@ -1,44 +1,19 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const { sendEmail } = require('../../lib/sendEmail');
 
 // Welcome email to any new user that signs up regardless of customer type
-exports.sendWelcomeEmail = functions.auth.user().onCreate(async (user) => {
+module.exports = functions.auth.user().onCreate(async (user) => {
   const { email, displayName } = user;
 
   try {
-    const compose = await admin
-      .firestore()
-      .collection('mail')
-      .add({
-        to: email,
-        template: {
-          name: 'WelcomeMail',
-          data: {
-            email: email,
-            username: email,
-            name: displayName,
-          },
-        },
-      });
 
-    const copyEmailToAdmin = await admin
-      .firestore()
-      .collection('mail')
-      .add({
-        to: 'support@findingspaces.com',
-        template: {
-          name: 'WelcomeMail',
-          subject: 'NEW USER SIGN UP',
-          data: {
-            email: email,
-            username: email,
-            name: displayName,
-          },
-        },
-      });
+   sendEmail(email, "d-fd270280ed414c0e8816ad46741ba2ee",  {
+      name: displayName,
+   });
 
-    functions.logger.log('NEWUSEREMAIL', email);
+    functions.logger.log('NEWUSEREMAIL', displayName);
   } catch (error) {
-    functions.logger.log(error);
+    functions.logger.log(error.response.body);
   }
 });

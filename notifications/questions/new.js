@@ -3,7 +3,7 @@ const admin = require('firebase-admin');
 
 
 // Seller notified about a new question that needs to be answered
-exports.sendNewQuestionEmail = functions.firestore
+module.exports = functions.firestore
   .document('listings/{listingId}/questions/{questionId}')
   .onCreate(async (snap, context) => {
     // if self generated, then bail out

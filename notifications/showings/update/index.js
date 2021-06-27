@@ -17,6 +17,7 @@ const showingsUpdated = functions.firestore
       buyerUser,
       listingId,
       cancelReason = null,
+      declineReason = null,
     } = updated;
 
    // grab listing Address
@@ -46,28 +47,37 @@ const showingsUpdated = functions.firestore
 
    switch (statusValue) {
       case 'approved':
-         sendEmail(buyerUser.email, "id", "Showing Approved", {
-            buyerDisplayName: buyerUser.displayName,
+         sendEmail(buyerUser.email, "d-043f02ca137d42c48339beedc27e2345", {
+            displayName: buyerUser.displayName,
+            listingAddress: listing.fullAddress,
+         });
+         sendEmail(sellerEmail, "d-043f02ca137d42c48339beedc27e2345", {
+            displayName: sellerDisplayName,
             listingAddress: listing.fullAddress,
          });
          break;
       case 'declined':
-         sendEmail(buyerUser.email, "id", "Showing Declined", {
+         sendEmail(buyerUser.email, "d-163c3849ad43480d9807b2e4a79b45f2", {
             buyerDisplayName: buyerUser.displayName,
             listingAddress: listing.fullAddress,
-            cancelReason: cancelReason,
+            declinedReason: declinedReason,
+         });
+         sendEmail(sellerEmail, "d-163c3849ad43480d9807b2e4a79b45f2", {
+            buyerDisplayName: sellerDisplayName,
+            listingAddress: listing.fullAddress,
+            declinedReason: declinedReason,
          });
          break;
       case 'cancelled':
          // both parties recieve cancellation
          // this way you don't need to track which party was responsible
          // for cancelling. 
-         sendEmail(buyerUser.email, "id", "Showing Cancelled", {
+         sendEmail(buyerUser.email, "d-60bfcb06eaae4c73b5d11c56ecefd00c", "Showing Cancelled", {
             buyerDisplayName: buyerUser.displayName,
             listingAddress: listing.fullAddress,
             cancelReason: cancelReason,
          });
-         sendEmail(sellerEmail, "id", "Showing Cancelled", {
+         sendEmail(sellerEmail, "d-60bfcb06eaae4c73b5d11c56ecefd00c", "Showing Cancelled", {
             buyerDisplayName: sellerDisplayName,
             listingAddress: listing.fullAddress,
             cancelReason: cancelReason,
@@ -91,4 +101,4 @@ const showingsUpdated = functions.firestore
 })
 
 
-module.exports.showingsUpdated = showingsUpdated;
+module.exports = showingsUpdated;

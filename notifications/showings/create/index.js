@@ -1,10 +1,12 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const { sendEmail } = require('../../../lib/sendEmail');
+const { sendSMS } = require('../../../lib/sendSms');
+
 
 
 // Seller notified of a new showing
-exports.sendShowingRequestNew = functions.firestore
+module.exports = functions.firestore
   .document('showings/{showingId}')
   .onCreate(async (snap, context) => {
     const {
@@ -34,12 +36,16 @@ exports.sendShowingRequestNew = functions.firestore
       const sellerEmail = sellerUser.email;
       const sellerDisplayName = sellerUser.displayName;
 
+      // get seller phone number
+      // TODO: migrate firebase auth data all under firestore user collection
+      // Was not sure how to fix when I first created app but now do
 
 
-      sendEmail(
+      sendSMS('+12702312537', "You have a new showing request. ");
+      
+      await sendEmail(
         sellerEmail,
         "d-619ecacba28545f6b145402668997bcc",
-        "New Showing Request",
         {
           buyerDisplayName: buyerUser.displayName,
           sellerDisplayName: sellerDisplayName,

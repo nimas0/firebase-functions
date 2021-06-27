@@ -1,2 +1,1 @@
-exports.welcome = require('./welcome');
-exports.resetDb  = require('./resetdb')
+exports.welcome = require('./welcome')

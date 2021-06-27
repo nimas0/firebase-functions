@@ -1,2 +1,2 @@
-exports.questionCreated = require('./new.js')
-exports.questionResponse = require('./response.js');
+exports.created = require('./new.js')
+exports.response = require('./response.js');
