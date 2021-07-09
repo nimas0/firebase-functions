@@ -9,8 +9,6 @@ const moment = require('moment');
 const { initialSetUpData } = require('./lib/homeDetailsStructureObject');
 const { checkout } = require('../adminTasks/signInventory/inventory-functions');
 
-const CHARGE_AMOUNT_P1 = 10000;
-const CURRENCY = 'usd';
 
 /**
  * When a user is created, create a Stripe customer object for them.
@@ -298,79 +296,33 @@ exports.createNewListing = functions.https.onCall(async (data, context) => {
 
 });
 
-exports.addMarketingPackageToExistingFreeListing = functions.https.onCall(
-  (data, context) => {
-    // Authentication / user information is automatically added to the request.
-    const uid = context.auth.uid;
-    const name = context.auth.token.name || null;
-    const picture = context.auth.token.picture || null;
-    const email = context.auth.token.email || null;
-
-    // handle payment for someone who changed their mind and
-    // purchased marketing package post creation
-  }
-);
-
-exports.createStripePaymentCall = functions.https.onCall(
+exports.testCoupon = functions.https.onCall(
   async (data, context) => {
-    // Checking that the user is authenticated.
-    if (!context.auth) {
-      // Throwing an HttpsError so that the client gets the error details.
-      throw new functions.https.HttpsError(
-        'failed-precondition',
-        'The function must be called ' + 'while authenticated.'
-      );
-    }
+let test = '123';
 
-    // [START authIntegration]
-    // Authentication user information is automatically added to the request.
-    const uid = context.auth.uid;
-    const name = context.auth.token.name || null;
-    const picture = context.auth.token.picture || null;
-    const email = context.auth.token.email || null;
-    //[END authIntegration]
+    const price = await stripe.prices.retrieve(
+      'price_1JAmJjL66vySrkwRV5KjI3J2'
+    );
 
-    const { payment_method = null } = data;
-    const { payment_intent = null } = data;
-    let intent;
+  
+    const CHARGE_AMOUNT_P1 = price.unit_amount;
+    const CURRENCY = 'usd';
+    const {error, coupon} =  await stripe.coupons.retrieve(
+      'dfgdfgdfg'
+    );
     try {
-      // Look up the Stripe customer id.
-      functions.logger.log('uid', uid);
-      functions.logger.log('payment', payment_method);
-      //const customer = (await snap.ref.parent.parent.get()).data().customer_id;
-      const dbRef = admin.firestore().collection('stripe_customers');
-      const customer = (await dbRef.doc(uid).get()).data();
 
-      functions.logger.log('[customer]', customer.customer_id);
-      // Create a charge using the pushId as the idempotency key
-      // to protect against double charges.
+ 
+     
 
-      //const idempotencyKey = context.params.pushId;
-      if (payment_method) {
-        // Create the PaymentIntent
-        intent = await stripe.paymentIntents.create({
-          amount: CHARGE_AMOUNT_P1,
-          currency: CURRENCY,
-          customer: customer.customer_id,
-          payment_method,
-          off_session: false,
-          confirm: true,
-          confirmation_method: 'manual',
-        });
-      } else if (payment_intent) {
-        intent = await stripe.paymentIntents.confirm(payment_intent);
-      }
+    
+  
+  return error;
 
-      // Send the response to the client
-      return generateResponse(intent);
     } catch (error) {
-      // We want to capture errors and render them in a user-friendly way, while
-      // still logging an exception with StackDriver
-      functions.logger.log(error);
-      throw new functions.https.HttpsError('unknown', error.message, error);
-      //await snap.ref.set(payment, { merge: true });
-      //await snap.ref.set({ ...error.payment_intent, errorMessage: userFacingMessage(error) }, { merge: true });
-      //   await reportError(error, { user: context.params.userId });
+      //functions.logger.log(error);
+      return error.type;
+
     }
   }
 );
@@ -452,7 +404,161 @@ exports.addPaymentMethodDetailsVerifyFreeAccount = functions.https.onCall(
 );
 
 
+exports.createStripePaymentCall = functions.https.onCall(
+  async (data, context) => {
+    // Checking that the user is authenticated.
+    if (!context.auth) {
+      // Throwing an HttpsError so that the client gets the error details.
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'The function must be called ' + 'while authenticated.'
+      );
+    }
+
+    const CURRENCY = 'usd';
+
+    // [START authIntegration]
+    // Authentication user information is automatically added to the request.
+    const uid = context.auth.uid;
+    const name = context.auth.token.name || null;
+    const picture = context.auth.token.picture || null;
+    const email = context.auth.token.email || null;
+    //[END authIntegration]
+
+    const { payment_method = null } = data;
+    const { payment_intent = null } = data;
+    let intent;
+    let coupon;
+    try {
+
+      const price = await stripe.prices.retrieve(
+        'price_1JAmJjL66vySrkwRV5KjI3J2'
+      );
+
+
+  
+      if(data.coupon.length > 1) {
+      coupon = await stripe.coupons.retrieve(
+        data.coupon.toString()
+      )
+      updateStateToAddress(uid);
+      intent = {};
+      intent.status = 'succeeded'
+      return generateResponse(intent)
+      }
+
+      // let discountAmount = (coupon.percent_off / 100) * price.unit_amount;
+      // let charge = price.unit_amount - discountAmount;
+  
+
+
+      // Look up the Stripe customer id.
+      functions.logger.log('uid', uid);
+      functions.logger.log('payment', payment_method);
+      //const customer = (await snap.ref.parent.parent.get()).data().customer_id;
+      const dbRef = admin.firestore().collection('stripe_customers');
+      const customer = (await dbRef.doc(uid).get()).data();
+
+      // functions.logger.log('[customer]', charge);
+      // Create a charge using the pushId as the idempotency key
+      // to protect against double charges.
+
+      //const idempotencyKey = context.params.pushId;
+      if (payment_method) {
+        // Create the PaymentIntent
+        intent = await stripe.paymentIntents.create({
+          amount: price.unit_amount,
+          currency: CURRENCY,
+          customer: customer.customer_id,
+          payment_method,
+          off_session: false,
+          confirm: true,
+          confirmation_method: 'manual',
+        });
+      } else if (payment_intent) {
+        intent = await stripe.paymentIntents.confirm(payment_intent);
+      }
+
+      // Send the response to the client
+      return generateResponse(intent);
+    } catch (error) {
+      
+      // We want to capture errors and render them in a user-friendly way, while
+      // still logging an exception with StackDriver
+      functions.logger.log(error);
+      throw new functions.https.HttpsError('unknown', error.message, error);
+     
+      //await snap.ref.set(payment, { merge: true });
+      //await snap.ref.set({ ...error.payment_intent, errorMessage: userFacingMessage(error) }, { merge: true });
+      //   await reportError(error, { user: context.params.userId });
+    }
+  }
+);
+
+exports.validateCoupon = functions.https.onCall(
+  async (data, context) => {
+    // Checking that the user is authenticated.
+    if (!context.auth) {
+      // Throwing an HttpsError so that the client gets the error details.
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'The function must be called ' + 'while authenticated.'
+      );
+    }
+
+    // [START authIntegration]
+    // Authentication user information is automatically added to the request.
+    const uid = context.auth.uid;
+    //[END authIntegration]
+
+    try {
+      // retrieve price of user sign up
+      const price = await stripe.prices.retrieve(
+        'price_1JAmJjL66vySrkwRV5KjI3J2'
+      );
+
+      // validate coupon code. will throw error if not valid
+      let intent = {};
+      const coupon = await stripe.coupons.retrieve(
+        data.coupon.toString()
+      );
+
+      // calculate new price, update listing_state if charge = 0
+      let discountAmount = (coupon.percent_off / 100) * price.unit_amount;
+      let charge = price.unit_amount - discountAmount;
+      // if (charge === 0) updateStateToAddress(uid);
+
+      // return new price
+      intent.status = 'succeeded'
+      return charge 
+
+
+
+      
+
+  
+
+
+      // Look up the Stripe customer id.
+      functions.logger.log('uid', uid);
+      functions.logger.log('payment', payment_method);
+      //const customer = (await snap.ref.parent.parent.get()).data().customer_id;
+      const dbRef = admin.firestore().collection('stripe_customers');
+      const customer = (await dbRef.doc(uid).get()).data();
+
+     
+    } catch (error) {
+      
+  
+      functions.logger.log(error);
+      throw new functions.https.HttpsError('unknown', error.message, error);
+     
+    }
+  }
+);
+
 /**
+ * TODOOOO: Rename function to its actual use
  * When adding the payment method ID on the client,
  * this function is triggered to retrieve the payment method details.
  */
@@ -460,14 +566,8 @@ exports.addPaymentMethodDetailsAndCharge = functions.firestore
   .document('stripe_customers/{userId}/payments/{pushId}')
   .onCreate(async (snap, context) => {
     const uid = context.params.userId;
-    // functions.logger.log('uid',uid);
-    // functions.logger.log('pushId',context.params.pushId);
-    // functions.logger.log('meh',context.params)
+
     try {
-
-
-      functions.logger.log('asldfjalsdjflasdjf')
-
 
       // Create a new SetupIntent so the customer can add a new method next time.
       
@@ -571,22 +671,6 @@ const createListing = async (values, userId, genListingId, signCode) => {
 
     await admin;
 
-
-  
-    //   
-    //add question2 to the subcolleciton of listing
-    // await db
-    //   .collection('listings')
-    //   .doc(genListingId)
-    //   .collection('questions')
-    //   .add({
-    //     created: admin.firestore.FieldValue.serverTimestamp(),
-    //     deleted: false,
-    //     internal: true,
-    //     public: false,
-    //     question: 'What is the best part about the area?',
-    //     isExample: true,
-    //   });
     // create example showing tied to fake account for tour/onboarding purposes
     showingId = await db.collection(`showings`).add({
       buyerUser: {
@@ -849,4 +933,38 @@ const createAddressComponents = (addressPartsArray) => {
   );
   return addressObject;
 };
+
+const updateStateToAddress = async (uid) => {
+   // Create a new SetupIntent so the customer can add a new method next time.
+      try {
+         // if not return an error
+         const customerIdRef = await (admin.firestore().collection('stripe_customers').doc(uid)).get();
+         const customerId = customerIdRef.data().customer_id;
+          const intent = await stripe.setupIntents.create({
+            customer: customerId,
+          });
+
+          await admin.firestore().collection('stripe_customers').doc(uid).set({
+            setup_secret: intent.client_secret,
+          }, {merge: true});
+     
+      
+
+    
+      // TODO This command doesnt belong here bc it hurts reusability.
+      // we are assuming that this is the first listing they have created and 
+      // id will be found on position 0 in array under listing_state db connection
+      const listing_state = await (admin.firestore().collection('listing_state').doc(uid)).get();
+      const listingObject = listing_state.data().listingId[0];
+   
+      const listingId = Object.keys(listingObject)[0];
+      functions.logger.log(listingId);
+      await admin.firestore().collection('listing_state').doc(uid).set(
+        { listingId: [{[listingId]: 'address'}] }
+      );
+      } catch (error) {
+        functions.logger.log(error)
+      }
+        
+}
 

@@ -26,7 +26,7 @@ module.exports = functions.firestore
       const listingRef = admin.firestore().collection('listings');
       const listing = (await listingRef.doc(listingId).get()).data();
 
-
+      functions.logger.log('listing', listing)
       // get seller Email and display name
       let sellerSnapshot = await admin
         .database()
@@ -41,7 +41,7 @@ module.exports = functions.firestore
       // Was not sure how to fix when I first created app but now do
 
 
-      sendSMS('+12702312537', "You have a new showing request. ");
+      sendSMS('+12702312537', "You have a new showing request. Visit your dashboard by clicking https://seller.findingspaces.com");
       
       await sendEmail(
         sellerEmail,
