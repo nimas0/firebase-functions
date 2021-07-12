@@ -432,10 +432,10 @@ exports.createStripePaymentCall = functions.https.onCall(
     try {
 
       const price = await stripe.prices.retrieve(
-        'price_1JAmJjL66vySrkwRV5KjI3J2'
+        'price_1IS4z7L66vySrkwR5C1cQ7Ha'
       );
 
-
+// alsdkjflsadkjflkj
   
       if(data.coupon.length > 1) {
       coupon = await stripe.coupons.retrieve(
@@ -514,7 +514,7 @@ exports.validateCoupon = functions.https.onCall(
     try {
       // retrieve price of user sign up
       const price = await stripe.prices.retrieve(
-        'price_1JAmJjL66vySrkwRV5KjI3J2'
+        'price_1IS4z7L66vySrkwR5C1cQ7Ha'
       );
 
       // validate coupon code. will throw error if not valid
