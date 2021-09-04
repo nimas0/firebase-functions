@@ -3,7 +3,7 @@ const admin = require('firebase-admin');
 
 const shortid = require('shortid');
 const { initialSetUpData } = require('../lib/homeDetailsStructureObject');
-const stripe = require('stripe')(functions.config().stripe.testkey);
+const stripe = require('stripe')(functions.config().stripe.prodkey);
 const db = admin.firestore();
 const moment = require('moment');
 

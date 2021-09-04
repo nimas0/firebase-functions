@@ -1,5 +1,4 @@
 
-
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const {uid: shortid} = require('uid');
@@ -9,7 +8,7 @@ const moment = require('moment');
 const { initialSetUpData } = require('./lib/homeDetailsStructureObject');
 const { checkout } = require('../adminTasks/signInventory/inventory-functions');
 
-
+// comment
 /**
  * When a user is created, create a Stripe customer object for them.
  *
@@ -20,11 +19,15 @@ exports.createStripeCustomer = functions.auth.user().onCreate(async (user) => {
   const intent = await stripe.setupIntents.create({
   customer: customer.id,
   });
-  await admin.firestore().collection('stripe_customers').doc(user.uid).set({
+  functions.logger.log('createCustomer', customer.id);
+  
+  const db = await admin.firestore().collection('stripe_customers').doc(user.uid).set({
     customer_id: customer.id,
     setup_secret: intent.client_secret,
   });
-  return;
+  functions.logger.log('dbcall', db)
+  return db;
+
 });
 
 /**
@@ -129,7 +132,7 @@ exports.preGenerateNewListingId = functions.https.onCall(
       // do this on client, if they do, delete pending data and listing ID
 
       // if not, generate unique identifier serving as listing id
-      const genListingId = await shortid();
+      const genListingId = '5ba9a49b274' // await shortid();
 
       // add new listing Id to user document as newListingInProcess
       const isPending = await userRef.update({
@@ -173,7 +176,7 @@ exports.preGenerateNewListingId = functions.https.onCall(
     try {
 
       // if not, generate unique identifier serving as listing id
-      const genListingId = await shortid();
+      const genListingId = "5ba9a49b274" // await shortid();
 
       const defaultListingState = [{[genListingId]: 'payment'}]
       // check for pending listing already in session (string)
@@ -282,9 +285,10 @@ exports.createNewListing = functions.https.onCall(async (data, context) => {
 
     await generateOnboardingTasks(showingID, listingId);
 
-      await admin.firestore().collection('listing_state').doc(userId).set(
-        { listingId: [{[listingId]: 'dashboard'}] }
-      );
+    // removed because we resigned the global app state. 
+      // await admin.firestore().collection('listing_state').doc(userId).set(
+      //   { listingId: [{[listingId]: 'dashboard'}] }
+      // );
 
 
 
@@ -307,12 +311,12 @@ let test = '123';
   
     const CHARGE_AMOUNT_P1 = price.unit_amount;
     const CURRENCY = 'usd';
-    const {error, coupon} =  await stripe.coupons.retrieve(
-      'dfgdfgdfg'
+    const coupon =  await stripe.coupons.retrieve(
+      'EARLYADOPTER21'
     );
     try {
 
- 
+ console.log('coupon', coupon)
      
 
     
@@ -441,7 +445,8 @@ exports.createStripePaymentCall = functions.https.onCall(
       coupon = await stripe.coupons.retrieve(
         data.coupon.toString()
       )
-      updateStateToAddress(uid);
+      // ready customer to create a new payment in the future
+      generateNewSetupIntent(uid);
       intent = {};
       intent.status = 'succeeded'
       return generateResponse(intent)
@@ -514,7 +519,7 @@ exports.validateCoupon = functions.https.onCall(
     try {
       // retrieve price of user sign up
       const price = await stripe.prices.retrieve(
-        'price_1IS4z7L66vySrkwR5C1cQ7Ha'
+        functions.config().stripe.price
       );
 
       // validate coupon code. will throw error if not valid
@@ -526,7 +531,7 @@ exports.validateCoupon = functions.https.onCall(
       // calculate new price, update listing_state if charge = 0
       let discountAmount = (coupon.percent_off / 100) * price.unit_amount;
       let charge = price.unit_amount - discountAmount;
-      // if (charge === 0) updateStateToAddress(uid);
+      //if (charge === 0) updateStateToAddress(uid);
 
       // return new price
       intent.status = 'succeeded'
@@ -550,7 +555,72 @@ exports.validateCoupon = functions.https.onCall(
     } catch (error) {
       
   
-      functions.logger.log(error);
+      functions.logger.log('host', window.location.host, error);
+      throw new functions.https.HttpsError('unknown', error.message, error);
+     
+    }
+  }
+);
+
+exports.isCouponFree = functions.https.onCall(
+  async (data, context) => {
+    // Checking that the user is authenticated.
+    if (!context.auth) {
+      // Throwing an HttpsError so that the client gets the error details.
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'The function must be called ' + 'while authenticated.'
+      );
+    }
+
+    // [START authIntegration]
+    // Authentication user information is automatically added to the request.
+    const uid = context.auth.uid;
+    //[END authIntegration]
+
+    try {
+      // retrieve price of user sign up
+      const price = await stripe.prices.retrieve(
+        functions.config().stripe.price
+      );
+
+      // validate coupon code. will throw error if not valid
+      let intent = {};
+      const coupon = await stripe.coupons.retrieve(
+        data.coupon.toString()
+      );
+
+      // calculate new price, update listing_state if charge = 0
+      let discountAmount = (coupon.percent_off / 100) * price.unit_amount;
+      let charge = price.unit_amount - discountAmount;
+      // if (charge === 0) updateStateToAddress(uid);
+      const customerRef = await (admin.firestore().collection('stripe_customers').doc(uid).collection('payments')).add({
+        data: { coupon: data.coupon.toString() }
+      });
+
+      // return new price
+      intent.status = 'succeeded'
+      return charge 
+
+
+
+      
+
+  
+
+
+      // Look up the Stripe customer id.
+      functions.logger.log('uid', uid);
+      functions.logger.log('payment', payment_method);
+      //const customer = (await snap.ref.parent.parent.get()).data().customer_id;
+      const dbRef = admin.firestore().collection('stripe_customers');
+      const customer = (await dbRef.doc(uid).get()).data();
+
+     
+    } catch (error) {
+      
+  
+      functions.logger.log('host', error);
       throw new functions.https.HttpsError('unknown', error.message, error);
      
     }
@@ -593,9 +663,9 @@ exports.addPaymentMethodDetailsAndCharge = functions.firestore
    
       const listingId = Object.keys(listingObject)[0];
       functions.logger.log(listingId);
-      await admin.firestore().collection('listing_state').doc(uid).set(
-        { listingId: [{[listingId]: 'address'}] }
-      );
+      // await admin.firestore().collection('listing_state').doc(uid).set(
+      //   { listingId: [{[listingId]: 'address'}] }
+      // );
 
       // TODO potential issue
       // if somehow they already had a signed up multiple listings and this gets called,
@@ -613,8 +683,122 @@ exports.addPaymentMethodDetailsAndCharge = functions.firestore
 
 
 
+  exports.requestAppState = functions.https.onCall(
+    async (data, context) => {
+      // Checking that the user is authenticated.
+      if (!context.auth) {
+        // Throwing an HttpsError so that the client gets the error details.
+        throw new functions.https.HttpsError(
+          'failed-precondition',
+          'The function must be called ' + 'while authenticated.'
+        );
+      }
+  
+      // response.set('Access-Control-Allow-Origin', '*');
+      // [START authIntegration]
+      // Authentication user information is automatically added to the request.
+      const uid = context.auth.uid;
+      // [END authIntegration]
+  
+      try {
+
+        // check if state exists 
+        // does the user have a listing, if not generate it?
+        const listingStateRef = admin.firestore().collection('listing_state').doc(uid);
+        const listingStateSnapshot = await listingStateRef.get();
+        let listingState;
+        console.log('asdfasdfasdf!!!!', listingStateSnapshot.exists)
+        if (listingStateSnapshot.exists) {
+          let results = listingStateSnapshot.data().listingId[0];
+          listingState = Object.values(results)[0];
+          console.log('-!-!-!-!-!-!- listinState true', listingState)
+        } else {
+          listingState = await initializeAppState(uid);
+
+        
+  
+        }
+        
+        return {
+          listingState
+        }
+        //catch any other error and send message to handle on client
+        // dont let proceed
+      } catch (error) {
+        functions.logger.log(`${uid} - requestStateApp`, error);
+        // Re-throwing the error as an HttpsError so that the client gets the error details.
+        throw new functions.https.HttpsError('unknown', error.message, error);
+      }
+    }
+  );
 
 
+  exports.requestUpdateAppState = functions.https.onCall(
+    async (data, context) => {
+      // Checking that the user is authenticated.
+      if (!context.auth) {
+        // Throwing an HttpsError so that the client gets the error details.
+        throw new functions.https.HttpsError(
+          'failed-precondition',
+          'The function must be called ' + 'while authenticated.'
+        );
+      }
+      console.log('DAAATAAAA', data);
+      // response.set('Access-Control-Allow-Origin', '*');
+      // [START authIntegration]
+      // Authentication user information is automatically added to the request.
+      const uid = context.auth.uid;
+      const type = data;
+      // [END authIntegration]
+  
+      try {
+
+        // check if state exists 
+        const listingStateRef = await (admin.firestore().collection('listing_state').doc(uid)).get();
+        let listingState;
+        console.log('requestUpdate-made it past check state')
+        if (listingStateRef.empty) {
+          listingState = initializeAppState(uid);
+        } else {
+          console.log('requestUpdate-made it past if statement')
+          let results = listingStateRef.data().listingId[0];
+          currentListingState = Object.values(results)[0];
+          // switch statement directing type of update
+
+
+
+          switch (type) {
+            case "address":
+               listingState = await updateStateToAddress(uid);
+               console.log('listingState', listingState)
+               return {
+                listingState
+              }
+            case "dashboard":
+              listingState = await updateStateToDashboard(uid);
+              console.log('listingState', listingState)
+              return {
+                listingState
+              }
+              
+            default:
+             listingState = currentListingState;
+             return {
+              listingState
+            }
+          }
+        }
+        console.log('listingSTATE', listingState)
+ 
+        //catch any other error and send message to handle on client
+        // dont let proceed
+      } catch (error) {
+        functions.logger.log(`${uid} - requestStateUpdate`, error);
+        // Re-throwing the error as an HttpsError so that the client gets the error details.
+        throw new functions.https.HttpsError('unknown', error.message, error);
+      }
+    }
+  );
 
 // --------------------------------------------------------------
 // HELPER FUNCTIONS----------------------------------------------
@@ -934,7 +1118,8 @@ const createAddressComponents = (addressPartsArray) => {
   return addressObject;
 };
 
-const updateStateToAddress = async (uid) => {
+
+const generateNewSetupIntent = async (uid) => {
    // Create a new SetupIntent so the customer can add a new method next time.
       try {
          // if not return an error
@@ -951,20 +1136,124 @@ const updateStateToAddress = async (uid) => {
       
 
     
-      // TODO This command doesnt belong here bc it hurts reusability.
-      // we are assuming that this is the first listing they have created and 
-      // id will be found on position 0 in array under listing_state db connection
-      const listing_state = await (admin.firestore().collection('listing_state').doc(uid)).get();
-      const listingObject = listing_state.data().listingId[0];
-   
-      const listingId = Object.keys(listingObject)[0];
-      functions.logger.log(listingId);
-      await admin.firestore().collection('listing_state').doc(uid).set(
-        { listingId: [{[listingId]: 'address'}] }
-      );
       } catch (error) {
         functions.logger.log(error)
       }
         
 }
 
+const initializeAppState = async (uid) => {
+// add a try catch block
+  const genListingId = "5ba9a49b274" // await shortid();
+  
+      // double check system if it is really in free mode
+     const isPremium = await (admin.firestore().collection('private').doc('payment_mode')).get();
+     const isFree = !isPremium.data().isPremium
+
+     const updateType = isFree ? 'address' : 'payment'
+  const defaultListingState = [{[genListingId]: updateType}]
+  await admin.firestore().collection('listing_state').doc(uid).set(
+    { listingId: defaultListingState }
+  );
+
+
+  //return new listing id
+  return updateType;
+}
+
+const updateStateToAddress  = async (uid) => {
+
+  // double check system if it is really in free mode
+  const isPremium = await (admin.firestore().collection('private').doc('payment_mode')).get();
+  const isFree = !isPremium.data().isPremium
+  // has user paid? or entered a coupon
+
+
+  const listingStateRef = await (admin.firestore().collection('stripe_customers').doc(uid).collection('payments')).get();
+  //let hasPayment = listingStateRef.data().forEach()
+  console.log(listingStateRef.empty);
+  try {
+    let result;
+
+    if (listingStateRef.empty && !isFree) {
+      // user has not paid
+      result = 'payment'
+    } else {
+      // user has paid, allow state change
+      
+        // TODO This command doesnt belong here bc it hurts reusability.
+        // we are assuming that this is the first listing they have created and 
+        // id will be found on position 0 in array under listing_state db connection
+        const listing_state = await (admin.firestore().collection('listing_state').doc(uid)).get();
+        const listingObject = listing_state.data().listingId[0];
+     
+        const listingId = Object.keys(listingObject)[0];
+        functions.logger.log(listingId);
+        await admin.firestore().collection('listing_state').doc(uid).set(
+          { listingId: [{[listingId]: 'address'}] }
+        );
+        result = 'address'
+  
+    }
+    console.log('resultListingState', result)
+    return result;
+  } catch (error) {
+    functions.logger.log('updateStateToAddress-helper', error)
+  }
+
+
+  // return error if checks fail
+  // return new state
+}
+
+const updateStateToDashboard  = async (uid) => {
+  // has user paid? or entered a coupon
+
+// double check system if it is really in free mode
+const isPremium = await (admin.firestore().collection('private').doc('payment_mode')).get();
+const isFree = !isPremium.data().isPremium
+  
+  const paymentRef = admin.firestore().collection('stripe_customers').doc(uid).collection('payments');
+  const paymentSnapshot = await paymentRef.get();
+  //let hasPayment = paymentRef.data().forEach()
+  console.log('paymentSnapshot', paymentSnapshot.empty);
+  try {
+    let result;
+    // TODO
+// checking is paymentRef is only a temp solution. Does not handle if they are paying for more than one thing. 
+    if (!paymentSnapshot.empty || isFree) {
+      // user has not paid
+   
+      // user has paid, allow state change
+      
+        // TODO This command doesnt belong here bc it hurts reusability.
+        // we are assuming that this is the first listing they have created and 
+        // id will be found on position 0 in array under listing_state db connection
+        const listing_state = await (admin.firestore().collection('listing_state').doc(uid)).get();
+        const listingObject = listing_state.data().listingId[0];
+     
+        const listingId = Object.keys(listingObject)[0];
+        functions.logger.log(listingId);
+        await admin.firestore().collection('listing_state').doc(uid).set(
+          { listingId: [{[listingId]: 'dashboard'}] }
+        );
+        result = 'dashboard'
+  
+      } else {
+        result = 'payment'
+      }   
+    console.log('resultListingState', result)
+    return result;
+  } catch (error) {
+    functions.logger.log('updateStateToDashboard-helper', error)
+  }
+
+
+  // return error if checks fail
+  // return new state
+}
+
+
+const isFreeMode = async () => {
+
+}

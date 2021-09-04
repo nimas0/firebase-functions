@@ -4,7 +4,7 @@ const cors = require('cors')({origin: true});
 var serviceAccount = require('./service-account.json');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'https://development-main-b36b2-default-rtdb.firebaseio.com',
+  databaseURL: 'https://finding-spaces-73b23.firebaseio.com',
 });
 
 exports.taskbar = require('./taskbar/index');

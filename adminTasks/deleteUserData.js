@@ -2,7 +2,7 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const db = admin.firestore();
 
-const stripe = require('stripe')(functions.config().stripe.testkey);
+const stripe = require('stripe')(functions.config().stripe.prodkey);
 
 'use strict';
 
