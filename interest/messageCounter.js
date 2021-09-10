@@ -39,3 +39,37 @@ exports.newMessageCounter = functions.database.ref('/interest_chat/{interestId}/
         // Setting an "uppercase" sibling in the Realtime Database returns a Promise.
 
     });
+
+
+    exports.resetBuyerMessageCounter = functions.database.ref('/online/{interestId}/{pushId}')
+    .onUpdate(async (change, context) => {
+        functions.logger.log('test')
+
+        const state = change.after.child('state').val();
+        functions.logger.log('isOnline', state)
+
+        // if state goes offline, do nothing.
+        if (state !== 'online') {
+            functions.logger.log('im out')
+            return;
+        }
+        // Grab the current value of what was written to the Realtime Database.
+
+        const { pushId: buyerId, interestId } = context.params;
+        const listingId = interestId.split('_')[0];
+        functions.logger.log("ids", buyerId, interestId)
+        try {
+            const interest = admin.firestore().collection('interest').doc(interestId);
+          
+                functions.logger.log('END MADE IT HERE END');
+                //sdfsdf
+                // update seller message counter
+                await interest.update({
+                    buyerMessageCounter: 0
+                });
+
+        } catch (error) {
+            functions.logger.log('resetBuyerMessageCounter', error)
+        }
+
+    });

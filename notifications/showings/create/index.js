@@ -33,6 +33,7 @@ module.exports = functions.firestore
       // TODO: migrate firebase auth data all under firestore user collection
       // Was not sure how to fix when I first created app but now do
       functions.logger.log('made it this far');
+      functions.logger.log('made it this far');
       sendSMS(
         '+12702312537',
         'You have a new showing request. Visit your dashboard by clicking https://seller.findingspaces.com'

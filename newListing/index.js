@@ -132,7 +132,7 @@ exports.preGenerateNewListingId = functions.https.onCall(
       // do this on client, if they do, delete pending data and listing ID
 
       // if not, generate unique identifier serving as listing id
-      const genListingId = '5ba9a49b274' // await shortid();
+      const genListingId = await shortid();
 
       // add new listing Id to user document as newListingInProcess
       const isPending = await userRef.update({
@@ -176,7 +176,7 @@ exports.preGenerateNewListingId = functions.https.onCall(
     try {
 
       // if not, generate unique identifier serving as listing id
-      const genListingId = "5ba9a49b274" // await shortid();
+      const genListingId = await shortid();
 
       const defaultListingState = [{[genListingId]: 'payment'}]
       // check for pending listing already in session (string)
@@ -1144,7 +1144,7 @@ const generateNewSetupIntent = async (uid) => {
 
 const initializeAppState = async (uid) => {
 // add a try catch block
-  const genListingId = "5ba9a49b274" // await shortid();
+  const genListingId = await shortid();
   
       // double check system if it is really in free mode
      const isPremium = await (admin.firestore().collection('private').doc('payment_mode')).get();

@@ -1,6 +1,6 @@
 /* eslint-disable */
 const admin = require('firebase-admin');
-const cors = require('cors')({origin: true});
+const cors = require('cors')({ origin: true });
 var serviceAccount = require('./service-account.json');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -15,6 +15,6 @@ exports.verificationRequest = require('./lib/verificationRequest');
 exports.adminTasks = require('./adminTasks/index');
 exports.newListing = require('./newListing/index');
 exports.notifications = require('./notifications/index');
-// exports.messageCounter = require('./interest/messageCounter');
+exports.messageCounter = require('./interest/messageCounter');
 // exports.test2 = require('./newListing/lib/makeWebIds');
 // exports.sellerMessageBulk = require('./lib/messages');

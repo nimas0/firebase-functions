@@ -4,3 +4,4 @@ exports.users = require('./users');
 exports.listing = require('./listing');
 exports.interest = require('./interest');
 exports.showings = require('./showings');
+exports.chat = require('./chat');
